@@ -1,6 +1,5 @@
 /**
  * API Client Gateway for CommunityConnect
- * Prepared for Node.js + Express backend connection
  */
 
 import { ApiGatewayResponse } from '../types';
@@ -10,14 +9,41 @@ export interface ApiRequestOptions extends RequestInit {
   useMockFallback?: boolean;
 }
 
+function extractErrorMessage(value: unknown, fallback = 'API Gateway Connection Error'): string {
+  if (typeof value === 'string' && value.trim()) return value;
+  if (value instanceof Error && value.message) return value.message;
+
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+
+    for (const key of ['message', 'error_description', 'details', 'hint']) {
+      const candidate = record[key];
+      if (typeof candidate === 'string' && candidate.trim()) return candidate;
+    }
+
+    if ('error' in record) {
+      const nestedMessage = extractErrorMessage(record.error, '');
+      if (nestedMessage) return nestedMessage;
+    }
+
+    try {
+      const serialized = JSON.stringify(value);
+      if (serialized && serialized !== '{}') return serialized;
+    } catch {
+      // Ignore serialization failures and use the safe fallback below.
+    }
+  }
+
+  return fallback;
+}
+
 export class ApiGatewayClient {
   private baseUrl: string;
   private token: string | null = null;
-  private logs: { timestamp: string; method: string; endpoint: string; status: number; payload?: any }[] = [];
+  private logs: { timestamp: string; method: string; endpoint: string; status: number; payload?: unknown }[] = [];
 
   constructor(baseUrl?: string) {
     this.baseUrl = baseUrl || (import.meta as any).env?.VITE_API_BASE_URL || '/api/v1';
-    // Retrieve auth token if present
     this.token = typeof window !== 'undefined' ? localStorage.getItem('cc_auth_token') : null;
   }
 
@@ -37,7 +63,7 @@ export class ApiGatewayClient {
     return this.logs;
   }
 
-  private logApiCall(method: string, endpoint: string, status: number, payload?: any) {
+  private logApiCall(method: string, endpoint: string, status: number, payload?: unknown) {
     this.logs.unshift({
       timestamp: new Date().toLocaleTimeString(),
       method,
@@ -49,9 +75,9 @@ export class ApiGatewayClient {
   }
 
   public async request<T>(endpoint: string, options: ApiRequestOptions = {}): Promise<ApiGatewayResponse<T>> {
-    const { params, useMockFallback = true, ...fetchOptions } = options;
+    const { params, useMockFallback: _useMockFallback = false, ...fetchOptions } = options;
 
-    let url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+    let url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
     if (params) {
       const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, val]) => {
@@ -67,9 +93,7 @@ export class ApiGatewayClient {
       ...(options.headers as Record<string, string>),
     };
 
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
-    }
+    if (this.token) headers.Authorization = `Bearer ${this.token}`;
 
     const method = options.method || 'GET';
 
@@ -79,48 +103,55 @@ export class ApiGatewayClient {
         headers,
       });
 
-      if (!response.ok) {
-        let errMessage = `HTTP ${response.status}: ${response.statusText}`;
-        try {
-          const errJson = await response.json();
-          if (errJson.error || errJson.message) errMessage = errJson.error || errJson.message;
-        } catch (_) {}
+      const contentType = response.headers.get('content-type') || '';
+      let payload: unknown = null;
 
-        this.logApiCall(method, endpoint, response.status, { error: errMessage });
+      if (contentType.includes('application/json')) {
+        payload = await response.json();
+      } else {
+        const text = await response.text();
+        payload = text || null;
+      }
+
+      if (!response.ok) {
+        const payloadRecord = payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : null;
+        const errorValue = payloadRecord?.error ?? payloadRecord?.message ?? payload;
+        const errMessage = extractErrorMessage(
+          errorValue,
+          `HTTP ${response.status}: ${response.statusText || 'Request failed'}`,
+        );
+
+        this.logApiCall(method, endpoint, response.status, { error: errMessage, payload });
         throw new Error(errMessage);
       }
 
-      const data = await response.json();
-      this.logApiCall(method, endpoint, response.status, data);
-      return data;
-    } catch (error: any) {
-      // If server route is not available or network fails, throw or fallback if requested
-      this.logApiCall(method, endpoint, 500, { error: error.message, isFallbackMode: true });
-
-      // Signal error to caller so mock/local state can step in seamlessly
+      this.logApiCall(method, endpoint, response.status, payload);
+      return payload as ApiGatewayResponse<T>;
+    } catch (error: unknown) {
+      const message = extractErrorMessage(error);
+      this.logApiCall(method, endpoint, 500, { error: message });
       return {
         success: false,
-        error: error.message || 'API Gateway Connection Error',
+        error: message,
       };
     }
   }
 
-  // Helper methods
-  public async get<T>(endpoint: string, params?: Record<string, any>): Promise<ApiGatewayResponse<T>> {
-    return this.request<T>(endpoint, { method: 'GET', params });
+  public async get<T>(endpoint: string, params?: Record<string, unknown>): Promise<ApiGatewayResponse<T>> {
+    return this.request<T>(endpoint, { method: 'GET', params: params as Record<string, string | number | boolean | undefined> });
   }
 
-  public async post<T>(endpoint: string, body?: any): Promise<ApiGatewayResponse<T>> {
+  public async post<T>(endpoint: string, body?: unknown): Promise<ApiGatewayResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'POST',
-      body: body ? JSON.stringify(body) : undefined,
+      body: body === undefined ? undefined : JSON.stringify(body),
     });
   }
 
-  public async put<T>(endpoint: string, body?: any): Promise<ApiGatewayResponse<T>> {
+  public async put<T>(endpoint: string, body?: unknown): Promise<ApiGatewayResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PUT',
-      body: body ? JSON.stringify(body) : undefined,
+      body: body === undefined ? undefined : JSON.stringify(body),
     });
   }
 
