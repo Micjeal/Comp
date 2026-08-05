@@ -1,0 +1,23 @@
+{
+  "short_name": "CommunityConnect",
+  "name": "CommunityConnect • Civic Action & Advocacy Platform",
+  "icons": [
+    {
+      "src": "pwa-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "pwa-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0A0C10",
+  "theme_color": "#0F1219",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "description": "Empowering citizens and community leaders through transparent civic action, group discussions, advocacy campaigns, and local events."
+}

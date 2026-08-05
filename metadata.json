@@ -1,0 +1,6 @@
+{
+  "name": "CommunityConnect",
+  "description": "Community Values & Civic Engagement platform for lawful campaigns, groups, events, petitions, and educational resources.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

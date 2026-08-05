@@ -1,0 +1,191 @@
+@import "tailwindcss";
+
+@layer utilities {
+  /* Geometric Balance scrollbars & custom patterns */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+:root {
+  --bg-main: #0A0C10;
+  --bg-card: #0F1219;
+  --border-color: #1E293B;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+}
+
+html.light {
+  --bg-main: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --border-color: #E2E8F0;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-secondary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Light mode overrides for all views, cards, modals, and input controls */
+html.light .bg-\[\#0A0C10\] {
+  background-color: #F8FAFC !important;
+}
+
+html.light .bg-\[\#0F1219\],
+html.light .bg-\[\#0F1219\]\/95,
+html.light .bg-\[\#0F1219\]\/90,
+html.light .bg-\[\#0F1219\]\/80,
+html.light .bg-\[\#0F1219\]\/70 {
+  background-color: #FFFFFF !important;
+}
+
+html.light .bg-\[\#06080C\],
+html.light .bg-slate-900,
+html.light .bg-slate-900\/50,
+html.light .bg-slate-900\/60,
+html.light .bg-slate-900\/80,
+html.light .bg-slate-900\/90 {
+  background-color: #F1F5F9 !important;
+}
+
+html.light .border-slate-800,
+html.light .border-slate-800\/80,
+html.light .border-slate-800\/50,
+html.light .border-slate-800\/40 {
+  border-color: #E2E8F0 !important;
+}
+
+html.light .border-slate-700,
+html.light .border-slate-700\/60,
+html.light .border-slate-700\/50 {
+  border-color: #CBD5E1 !important;
+}
+
+html.light h1,
+html.light h2,
+html.light h3,
+html.light h4,
+html.light h5,
+html.light h6 {
+  color: #0F172A !important;
+}
+
+html.light .text-white:not(.text-white-keep) {
+  color: #0F172A;
+}
+
+html.light .text-slate-300 {
+  color: #334155 !important;
+}
+
+html.light .text-slate-400 {
+  color: #64748B !important;
+}
+
+html.light .text-slate-500 {
+  color: #64748B !important;
+}
+
+/* Maintain crisp white text inside solid colored badges, buttons, chips, and overlays */
+html.light .text-white-keep,
+html.light button.bg-blue-600,
+html.light button.bg-blue-600 *,
+html.light button.bg-blue-500,
+html.light button.bg-blue-500 *,
+html.light button.bg-purple-600,
+html.light button.bg-purple-600 *,
+html.light button.bg-emerald-600,
+html.light button.bg-emerald-600 *,
+html.light button.bg-teal-600,
+html.light button.bg-teal-600 *,
+html.light button.bg-red-600,
+html.light button.bg-red-600 *,
+html.light .bg-blue-600,
+html.light .bg-blue-600 *,
+html.light .bg-purple-600,
+html.light .bg-purple-600 *,
+html.light .bg-emerald-600,
+html.light .bg-emerald-600 *,
+html.light .bg-teal-600,
+html.light .bg-teal-600 * {
+  color: #FFFFFF !important;
+}
+
+html.light .bg-slate-800 {
+  background-color: #E2E8F0 !important;
+}
+
+html.light .bg-slate-800\/60 {
+  background-color: rgba(241, 245, 249, 0.9) !important;
+}
+
+html.light .bg-slate-800\/80 {
+  background-color: #F1F5F9 !important;
+}
+
+html.light .hover\:bg-slate-800:hover {
+  background-color: #E2E8F0 !important;
+}
+
+html.light input:not([type="checkbox"]):not([type="radio"]),
+html.light textarea,
+html.light select {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+html.dark input:not([type="checkbox"]):not([type="radio"]),
+html.dark textarea,
+html.dark select {
+  background-color: #0F1219 !important;
+  color: #F8FAFC !important;
+  border-color: #1E293B !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748B !important;
+}
+
+/* Fix browser autofill override in light & dark modes */
+html.dark input:-webkit-autofill,
+html.dark input:-webkit-autofill:hover,
+html.dark input:-webkit-autofill:focus,
+html.dark textarea:-webkit-autofill,
+html.dark select:-webkit-autofill {
+  -webkit-text-fill-color: #F8FAFC !important;
+  -webkit-box-shadow: 0 0 0px 1000px #0F1219 inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+html.light input:-webkit-autofill,
+html.light input:-webkit-autofill:hover,
+html.light input:-webkit-autofill:focus,
+html.light textarea:-webkit-autofill,
+html.light select:-webkit-autofill {
+  -webkit-text-fill-color: #0F172A !important;
+  -webkit-box-shadow: 0 0 0px 1000px #FFFFFF inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+html.light .shadow-2xl,
+html.light .shadow-xl,
+html.light .shadow-lg {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03) !important;
+}
+
+
